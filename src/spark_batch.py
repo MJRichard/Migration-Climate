@@ -40,7 +40,10 @@ HCN/CRN FLAG 77-79   Character
 WMO ID       81-85   Character
 '''
 
-ghcnd_raw = spark.read.text("../../Data/ghcnd-stations.txt").limit(1000)
+#s3 bucket http://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt
+#ghcnd_raw = spark.read.text("../../Data/ghcnd-stations.txt").limit(1000)
+ghcnd_raw = spark.read.text("s3://noaa-ghcn-pds/ghcnd-stations.txt").limit(1000)
+
 ghcnd_df=ghcnd_raw.select(
     ghcnd_raw.value.substr(1,11).alias('id'),
     ghcnd_raw.value.substr(13,8).cast('float').alias('Latitude'),
@@ -75,6 +78,10 @@ ghcnd_obs_schema = StructType([
     StructField("obs_time",StringType(),True)])
 #raw data for obs_time in subset data in format 070.0 instead of 0700 due to read/write issue when subsetting
 
+
+#Read in weather observations
+# AWS Bucket http://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/1788.csv.gz
+#noaa-ghcn-pds.s3.amazonaws.com/csv.gz/1788.csv.gz
 weather_data = spark.read.csv("../../Data/2002subset.csv", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
 #weather_data.show()
 
@@ -100,7 +107,6 @@ pidgeon_obs = spark.read.csv("../../Data/Pigeonsubset.csv", schema=pidgeon_schem
                              header=True).limit(100)
 pidgeon_obs = pidgeon_obs.withColumn('date', pidgeon_obs['timestamp'].cast('date'))
 #pidgeon_obs.show()
-#timestamp text
 #pidgeon_obs.printSchema()
 
 #join stations and observations to then calculate distance between every station and observation
