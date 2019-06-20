@@ -42,7 +42,7 @@ WMO ID       81-85   Character
 
 #s3 bucket http://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt
 #ghcnd_raw = spark.read.text("../../Data/ghcnd-stations.txt").limit(1000)
-ghcnd_raw = spark.read.text("s3://noaa-ghcn-pds/ghcnd-stations.txt").limit(1000)
+ghcnd_raw = spark.read.text("s3a://noaa-ghcn-pds/ghcnd-stations.txt").limit(1000)
 
 ghcnd_df=ghcnd_raw.select(
     ghcnd_raw.value.substr(1,11).alias('id'),
@@ -82,7 +82,8 @@ ghcnd_obs_schema = StructType([
 #Read in weather observations
 # AWS Bucket http://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/1788.csv.gz
 #noaa-ghcn-pds.s3.amazonaws.com/csv.gz/1788.csv.gz
-weather_data = spark.read.csv("../../Data/2002subset.csv", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
+#weather_data = spark.read.csv("../../Data/2002subset.csv", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
+weather_data = spark.read.csv("s3a://noaa-ghcn-pds/csv.gz/2002.csv.gz", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
 #weather_data.show()
 
 #change date to unified format
@@ -103,8 +104,11 @@ pidgeon_schema = StructType([
     StructField("individual_local_identifier",StringType(),True),
     StructField("study_name",StringType(),True)])
 
-pidgeon_obs = spark.read.csv("../../Data/Pigeonsubset.csv", schema=pidgeon_schema, timestampFormat='yyyy-MM-dd HH:mm:ss.SSS',
+#pidgeon_obs = spark.read.csv("../../Data/Pigeonsubset.csv", schema=pidgeon_schema, timestampFormat='yyyy-MM-dd HH:mm:ss.SSS',
+#                             header=True).limit(100)
+pidgeon_obs = spark.read.csv("s3a://insightmovementweather/MigrationData/Pigeon.csv", schema=pidgeon_schema, timestampFormat='yyyy-MM-dd HH:mm:ss.SSS',
                              header=True).limit(100)
+
 pidgeon_obs = pidgeon_obs.withColumn('date', pidgeon_obs['timestamp'].cast('date'))
 #pidgeon_obs.show()
 #pidgeon_obs.printSchema()
@@ -145,3 +149,5 @@ station_obs_calc = station_obs_join.withColumn('dist',udf_func(station_obs_join[
 #station_obs_calc=station_obs_join.withColumn("dist", haversine_distance("obs_lat", "obs_long", "station_lat", "station_long"))
 station_obs_calc.show()
 #calculate haversine distance
+
+station_obs_calc.write.csv("s3a://insightmovementweather/output_data/testjoin.csv")
