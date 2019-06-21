@@ -11,9 +11,9 @@ Write result to PostgreSQL
 '''
 
 from pyspark import SparkConf, SparkContext, SQLContext
-from pyspark.sql import SparkSession, types
+from pyspark.sql import SparkSession, types, DataFrameReader
 from pyspark.sql.types import StructType, StructField, StringType, DateType, TimestampType, FloatType
-from pyspark.sql.functions import udf, struct
+from pyspark.sql.functions import udf, struct, col
 from math import radians, sin, cos, sqrt, asin
 import math
 
@@ -110,7 +110,7 @@ pidgeon_obs = spark.read.csv("s3a://insightmovementweather/MigrationData/Pigeon.
                              header=True).limit(100)
 
 pidgeon_obs = pidgeon_obs.withColumn('date', pidgeon_obs['timestamp'].cast('date'))
-#pidgeon_obs.show()
+pidgeon_obs.show()
 #pidgeon_obs.printSchema()
 
 #join stations and observations to then calculate distance between every station and observation
@@ -149,5 +149,10 @@ station_obs_calc = station_obs_join.withColumn('dist',udf_func(station_obs_join[
 #station_obs_calc=station_obs_join.withColumn("dist", haversine_distance("obs_lat", "obs_long", "station_lat", "station_long"))
 station_obs_calc.show()
 #calculate haversine distance
+station_output=station_obs_calc.select(col("eventid"),col("id"), col("dist").alias("distance"))
 
-station_obs_calc.write.csv("s3a://insightmovementweather/output_data/testjoin.csv")
+#station_obs_calc.write.csv("s3a://insightmovementweather/output_data/testjoin.csv")
+
+urlval='jdbc:postgresql://ec2-34-238-166-70.compute-1.amazonaws.com:5432/migrationplus'
+propertiesval = {'user': 'migrationplus', 'password': 'migrationplus'}
+station_output.write.jdbc(url=urlval, table='sensor_station_distance', mode='append', properties=propertiesval)
