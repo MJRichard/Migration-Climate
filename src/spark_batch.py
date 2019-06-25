@@ -50,6 +50,7 @@ ghcnd_df=ghcnd_raw.select(
     ghcnd_raw.value.substr(23,8).cast('float').alias('Longitude'),
     ghcnd_raw.value.substr(32,6).cast('float').alias('Elevation')
 )
+#other columns not needed, so not processing
 
 ghcnd_df.show()
 #float drops precision 0s
@@ -156,3 +157,10 @@ station_output=station_obs_calc.select(col("eventid"),col("id"), col("dist").ali
 urlval='jdbc:postgresql://ec2-34-238-166-70.compute-1.amazonaws.com:5432/migrationplus'
 propertiesval = {'user': 'migrationplus', 'password': 'migrationplus'}
 station_output.write.jdbc(url=urlval, table='sensor_station_distance', mode='append', properties=propertiesval)
+
+pidgeon_obs.write.jdbc(url=urlval, table='pidgeon_sensor', mode='append', properties=propertiesval)
+
+weather_data.write.jdbc(url=urlval, table='station_obs', mode='append', properties=propertiesval)
+
+ghcnd_df.write.jdbc(url=urlval, table='station', mode='append', properties=propertiesval)
+
