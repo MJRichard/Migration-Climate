@@ -154,7 +154,7 @@ station_output=station_obs_calc.select(col("eventid"),col("id"), col("dist").ali
 
 #station_obs_calc.write.csv("s3a://insightmovementweather/output_data/testjoin.csv")
 
-urlval='jdbc:postgresql://ec2-34-238-166-70.compute-1.amazonaws.com:5432/migrationplus'
+urlval='jdbc:postgresql://ec2-34-195-21-119.compute-1.amazonaws.com:5432/migrationplus'
 propertiesval = {'user': 'migrationplus', 'password': 'migrationplus'}
 station_output.write.jdbc(url=urlval, table='sensor_station_distance', mode='append', properties=propertiesval)
 
