@@ -110,8 +110,8 @@ pidgeon_schema = StructType([
 pidgeon_obs = spark.read.csv("s3a://insightmovementweather/MigrationData/Pigeon.csv", schema=pidgeon_schema, timestampFormat='yyyy-MM-dd HH:mm:ss.SSS',
                              header=True).limit(100)
 
-pidgeon_obs = pidgeon_obs.withColumn('date', pidgeon_obs['timestamp'].cast('date'))
-pidgeon_obs.show()
+#pidgeon_obs = pidgeon_obs.withColumn('date', pidgeon_obs['timestamp'].cast('date'))
+#pidgeon_obs.show()
 #pidgeon_obs.printSchema()
 
 #join stations and observations to then calculate distance between every station and observation
