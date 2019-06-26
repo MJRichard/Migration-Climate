@@ -85,7 +85,7 @@ ghcnd_obs_schema = StructType([
 #noaa-ghcn-pds.s3.amazonaws.com/csv.gz/1788.csv.gz
 #weather_data = spark.read.csv("../../Data/2002subset.csv", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
 weather_data = spark.read.csv("s3a://noaa-ghcn-pds/csv.gz/2002.csv.gz", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
-#weather_data.show()
+weather_data.show()
 
 #change date to unified format
 
@@ -162,5 +162,5 @@ pidgeon_obs.write.jdbc(url=urlval, table='pidgeon_sensor', mode='append', proper
 
 weather_data.write.jdbc(url=urlval, table='station_obs', mode='append', properties=propertiesval)
 
-ghcnd_df.write.jdbc(url=urlval, table='station', mode='append', properties=propertiesval)
+ghcnd_df.write.jdbc(url=urlval, table='stations', mode='append', properties=propertiesval)
 
