@@ -6,7 +6,7 @@ CREATE TABLE sensor_station_distance(
   distance NUMERIC(12,4)
   );
   
-
+--rename longitude/latitude
 CREATE TABLE pidgeon_sensor(
   eventid VARCHAR (20) PRIMARY KEY,
   visible VARCHAR (50),
@@ -19,7 +19,7 @@ CREATE TABLE pidgeon_sensor(
   outlier_flag VARCHAR(1),
   sensor_type VARCHAR(10),
   taxon_name VARCHAR(50),
-  tag_local_identifer VARCHAR(20),
+  tag_local_identifier VARCHAR(20),
   individual_local_identifier VARCHAR(20),
   study_name VARCHAR(100)
 );
