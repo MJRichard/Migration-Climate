@@ -3,7 +3,7 @@
 CREATE TABLE sensor_station_distance(
   id VARCHAR (11) NOT NULL,
   eventid VARCHAR (20) NOT NULL,
-  distance NUMERIC(12,4)
+  distance NUMERIC(20,4)
   );
   
 --rename longitude/latitude
@@ -11,7 +11,7 @@ CREATE TABLE pidgeon_sensor(
   eventid VARCHAR (20) PRIMARY KEY,
   visible VARCHAR (50),
   timestamp TIMESTAMP,
-  longtitude NUMERIC(9,5),
+  longitude NUMERIC(9,5),
   latitude NUMERIC(9,5),
   gps INT,
   ground_speed FLOAT,
@@ -37,7 +37,7 @@ CREATE TABLE station_obs(
 
 CREATE TABLE stations(
   id VARCHAR (11) NOT NULL,
-  longtitude NUMERIC(8,5) NOT NULL,
+  longitude NUMERIC(8,5) NOT NULL,
   latitude NUMERIC(8,5) NOT NULL,
   elevation NUMERIC(8,2)
 );
