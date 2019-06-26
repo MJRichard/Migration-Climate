@@ -12,7 +12,7 @@ Write result to PostgreSQL
 
 from pyspark import SparkConf, SparkContext, SQLContext
 from pyspark.sql import SparkSession, types, DataFrameReader
-from pyspark.sql.types import StructType, StructField, StringType, DateType, TimestampType, FloatType
+from pyspark.sql.types import StructType, StructField, StringType, DateType, TimestampType, FloatType, IntType
 from pyspark.sql.functions import udf, struct, col
 from math import radians, sin, cos, sqrt, asin
 import math
@@ -95,7 +95,7 @@ pidgeon_schema = StructType([
     StructField("timestamp",TimestampType(),False),
     StructField("longitude",FloatType(),False),
     StructField("latitude",FloatType(),False),
-    StructField("gps",StringType(),True),
+    StructField("gps",IntType(),True),
     StructField("ground_speed",StringType(),True),
     StructField("height_above_sealevel",StringType(),True),
     StructField("outlier_flag",StringType(),True),
