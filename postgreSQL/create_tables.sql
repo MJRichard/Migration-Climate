@@ -16,12 +16,13 @@ CREATE TABLE pidgeon_sensor(
   gps INT,
   ground_speed FLOAT,
   height_above_sealevel NUMERIC(8,2),
-  outlier_flag VARCHAR(1),
+  outlier_flag VARCHAR(5),
   sensor_type VARCHAR(10),
   taxon_name VARCHAR(50),
   tag_local_identifier VARCHAR(20),
   individual_local_identifier VARCHAR(20),
   study_name VARCHAR(100)
+  sensor_loc GEOGRAPHY(POINT)
 );
   
 CREATE TABLE station_obs(
@@ -40,4 +41,5 @@ CREATE TABLE stations(
   longitude NUMERIC(8,5) NOT NULL,
   latitude NUMERIC(8,5) NOT NULL,
   elevation NUMERIC(8,2)
+  station_loc GEOGRAPHY(POINT)
 );
