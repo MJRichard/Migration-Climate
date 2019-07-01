@@ -16,6 +16,7 @@ from pyspark.sql.types import StructType, StructField, StringType, DateType, Tim
 from pyspark.sql.functions import udf, struct, col
 from math import radians, sin, cos, sqrt, asin
 import math
+import datetime
 
 #attempts to get spark config working
 #sqlContext = SQLContext(sc)
@@ -40,9 +41,12 @@ HCN/CRN FLAG 77-79   Character
 WMO ID       81-85   Character
 '''
 
+#print("*************\n ************\n **********\n start  time: "+ datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")+"\n************\n ***************\n *************" )
+
+
 #s3 bucket http://noaa-ghcn-pds.s3.amazonaws.com/ghcnd-stations.txt
 #ghcnd_raw = spark.read.text("../../Data/ghcnd-stations.txt").limit(1000)
-ghcnd_raw = spark.read.text("s3a://noaa-ghcn-pds/ghcnd-stations.txt").limit(1000)
+ghcnd_raw = spark.read.text("s3a://noaa-ghcn-pds/ghcnd-stations.txt")
 
 ghcnd_df=ghcnd_raw.select(
     ghcnd_raw.value.substr(1,11).alias('id'),
@@ -52,9 +56,10 @@ ghcnd_df=ghcnd_raw.select(
 )
 #other columns not needed, so not processing
 
-ghcnd_df.show()
+#ghcnd_df.show()
 #float drops precision 0s
 
+#print("*************\n ************\n **********\n ghcnd read in" +str(ghcnd_df.count()) + " time: "+ datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")+"\n************\n ***************\n *************" )
 '''
 Daily data sets
     ID = 11 character station identification code. Please see ghcnd-stations section below for an explantation
@@ -84,8 +89,11 @@ ghcnd_obs_schema = StructType([
 # AWS Bucket http://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/1788.csv.gz
 #noaa-ghcn-pds.s3.amazonaws.com/csv.gz/1788.csv.gz
 #weather_data = spark.read.csv("../../Data/2002subset.csv", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
-weather_data = spark.read.csv("s3a://noaa-ghcn-pds/csv.gz/2002.csv.gz", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
-weather_data.show()
+weather_data = spark.read.csv("s3a://noaa-ghcn-pds/csv/2002.csv", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
+#weather_data.show()
+
+#print("*************\n ************\n **********\n 2002 weather read in done" +str(weather_data.count()) + " time: "+ datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")+"\n************\n ***************\n *************" )
+
 
 #change date to unified format
 
@@ -108,18 +116,25 @@ pidgeon_schema = StructType([
 #pidgeon_obs = spark.read.csv("../../Data/Pigeonsubset.csv", schema=pidgeon_schema, timestampFormat='yyyy-MM-dd HH:mm:ss.SSS',
 #                             header=True).limit(100)
 pidgeon_obs = spark.read.csv("s3a://insightmovementweather/MigrationData/Pigeon.csv", schema=pidgeon_schema, timestampFormat='yyyy-MM-dd HH:mm:ss.SSS',
-                             header=True).limit(100)
+                             header=True)
+
+
+#print("*************\n ************\n **********\n pidgeon read in done" +str(pidgeon_obs.count()) + " time: "+ datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")+"\n************\n ***************\n *************" )
+
 
 #pidgeon_obs = pidgeon_obs.withColumn('date', pidgeon_obs['timestamp'].cast('date'))
 #pidgeon_obs.show()
 #pidgeon_obs.printSchema()
 
 #join stations and observations to then calculate distance between every station and observation
+
+'''
 station_obs_join = pidgeon_obs.select("eventid", "latitude", "longitude").withColumnRenamed("latitude","obs_lat").withColumnRenamed("longitude","obs_long")\
     .crossJoin(ghcnd_df.select("id","Latitude","Longitude").withColumnRenamed("Latitude","station_lat").withColumnRenamed("Longitude","station_long"))\
     .select("eventid","id","obs_lat","obs_long","station_lat","station_long")
 
 #station_obs_join.count()
+'''
 
 def haversine_distance(lat1,lon1,lat2,lon2):
     '''
@@ -145,22 +160,33 @@ def haversine_distance(lat1,lon1,lat2,lon2):
 
 udf_func = udf(lambda a,b,c,d: haversine_distance(a,b,c,d),returnType=FloatType())
 
+'''
 station_obs_calc = station_obs_join.withColumn('dist',udf_func(station_obs_join['obs_lat'],station_obs_join['obs_long'],station_obs_join['station_lat'],station_obs_join['station_long']))
+'''
 
 #station_obs_calc=station_obs_join.withColumn("dist", haversine_distance("obs_lat", "obs_long", "station_lat", "station_long"))
-station_obs_calc.show()
+#station_obs_calc.show()
 #calculate haversine distance
-station_output=station_obs_calc.select(col("eventid"),col("id"), col("dist").alias("distance"))
+#station_output=station_obs_calc.select(col("eventid"),col("id"), col("dist").alias("distance"))
 
 #station_obs_calc.write.csv("s3a://insightmovementweather/output_data/testjoin.csv")
 
 urlval='jdbc:postgresql://ec2-34-195-21-119.compute-1.amazonaws.com:5432/migrationplus'
-propertiesval = {'user': 'migrationplus', 'password': 'migrationplus'}
-station_output.write.jdbc(url=urlval, table='sensor_station_distance', mode='append', properties=propertiesval)
+urlval2='jdbc:postgresql://migrationplus2.cbyji2jivihq.us-east-1.rds.amazonaws.com:5432/migrationplus'
 
-pidgeon_obs.write.jdbc(url=urlval, table='pidgeon_sensor', mode='append', properties=propertiesval)
+propertiesval = {'user': 'migrationplus', 'password': 'migrationplus', 'batchsize': '50000'}
+#station_output.write.jdbc(url=urlval2, table='sensor_station_distance', mode='append', properties=propertiesval)
 
-weather_data.write.jdbc(url=urlval, table='station_obs', mode='append', properties=propertiesval)
+pidgeon_obs.write.jdbc(url=urlval2, table='pidgeon_sensor', mode='overwrite', properties=propertiesval)
 
-ghcnd_df.write.jdbc(url=urlval, table='stations', mode='append', properties=propertiesval)
+#print("*************\n ************\n **********\n pidgeon write in??" +str(ghcnd_df.count()) + " time: "+ datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")+"\n************\n ***************\n *************" )
+
+#print(type(weather_data))
+#print("COUNT", weather_data.count())
+weather_data.write.jdbc(url=urlval2, table='station_obs', mode='overwrite', properties=propertiesval)
+
+#print("*************\n ************\n **********\nweather obs write in??" +str(ghcnd_df.count()) + " time: "+ datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")+"\n************\n ***************\n *************" )
+
+
+ghcnd_df.write.jdbc(url=urlval2, table='stations', mode='overwrite', properties=propertiesval)
 
