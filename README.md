@@ -5,7 +5,7 @@ This project was developed while being a Data Engineering Fellow at Insight Data
 in Boston session 19B.
 
 ##Pipeline
-![pipeline](imgs/pipeline.png)
+![pipeline](img/pipeline.jpg)
 
 ##Data Sources
 
