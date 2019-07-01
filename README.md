@@ -1,2 +1,13 @@
-# Migration-Climate
-Data Pipeline to join sensor data from migration data with nearest daily climate conditions. Project developed as a fellow in Insight Data Engineering, Boston.
+# MigrationPlus
+MigrationPlus is a data pipeline for researchers studying animal migrations to join their data
+ from tracking sensors with the weather conditions on the day of observation. 
+This project was developed while being a Data Engineering Fellow at Insight Data Science
+in Boston session 19B.
+
+##Pipeline
+![pipeline](imgs/pipeline.png)
+
+##Data Sources
+
+##Installation
+
