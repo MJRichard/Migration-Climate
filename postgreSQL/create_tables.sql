@@ -6,7 +6,6 @@ CREATE TABLE sensor_station_distance(
   distance NUMERIC(20,4)
   );
   
---rename longitude/latitude
 CREATE TABLE pidgeon_sensor(
   eventid VARCHAR (20) PRIMARY KEY,
   visible VARCHAR (50),
@@ -24,7 +23,7 @@ CREATE TABLE pidgeon_sensor(
   study_name VARCHAR(100)
   sensor_loc GEOGRAPHY(POINT)
 );
-  
+
 CREATE TABLE station_obs(
   id VARCHAR (11) NOT NULL,
   date DATE NOT NULL,
