@@ -4,10 +4,10 @@ MigrationPlus is a data pipeline for researchers studying animal migrations to j
 This project was developed while being a Data Engineering Fellow at Insight Data Science
 in Boston session 19B.
 
-##Pipeline
+## Pipeline
 ![pipeline](img/pipeline.jpg)
 
-##Data Sources
+## Data Sources
 
-##Installation
+## Installation
 
