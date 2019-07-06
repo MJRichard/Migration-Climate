@@ -31,9 +31,9 @@ In January 2019, the repository contained 141 data packages and 369 data files.
 The study on the [behavioral traits for homing pidgeons](https://www.datarepository.movebank.org/handle/10255/move.766)
  was selected as the datasource to test MigrationPlus, as it was one of the largest datasets available
  and the data was collected over a range of years. 
-The datafile was downloaded and added to an S3 bucket.
+The datafile is downloaded and added to an S3 bucket.
 
 ## Installation
 
-##Repo Structure
+## Repo Structure
 

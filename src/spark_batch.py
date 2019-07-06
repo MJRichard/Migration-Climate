@@ -89,9 +89,41 @@ ghcnd_obs_schema = StructType([
 # AWS Bucket http://noaa-ghcn-pds.s3.amazonaws.com/csv.gz/1788.csv.gz
 #noaa-ghcn-pds.s3.amazonaws.com/csv.gz/1788.csv.gz
 #weather_data = spark.read.csv("../../Data/2002subset.csv", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
-weather_data = spark.read.csv("s3a://noaa-ghcn-pds/csv/2002.csv", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')
+
+weather_data = spark.read.csv("s3a://noaa-ghcn-pds/csv/2002.csv", schema=ghcnd_obs_schema, dateFormat='yyyyMMdd')\
+                    .select("id", "date", "element", "element_val")
 #weather_data.show()
 
+tmin = weather_data.filter(weather_data.element == "TMIN").withColumnRenamed("element_val", "tmin")
+tmax = weather_data.filter(weather_data.element == "TMAX").withColumnRenamed("element_val", "tmax")
+prcp = weather_data.filter(weather_data.element == "PRCP").withColumnRenamed("element_val", "prcp")
+snow = weather_data.filter(weather_data.element == "SNOW").withColumnRenamed("element_val", "snow")
+snwd = weather_data.filter(weather_data.element == "SNWD").withColumnRenamed("element_val", "snwd")
+
+tmin.createOrReplaceTempView("tmin")
+tmax.createOrReplaceTempView("tmax")
+prcp.createOrReplaceTempView("prcp")
+snow.createOrReplaceTempView("snow")
+snwd.createOrReplaceTempView("snwd")
+
+flat_ghcnd2 = spark.sql("""Select COALESCE(tmin.id, tmax.id, prcp.id, snow.id, snwd.id) as id,
+                  COALESCE(tmin.date, tmax.date, prcp.date,
+                          snow.date, snwd.date) as date,
+                  tmin.tmin, tmax.tmax, prcp.prcp, snow.snow, snwd.snwd
+                  from tmin
+                  FULL OUTER JOIN tmax
+                  ON tmin.id = tmax.id AND tmin.date=tmax.date
+                  FULL OUTER JOIN prcp
+                  ON prcp.id=COALESCE(tmin.id, tmax.id)
+                     AND prcp.date=COALESCE(tmin.date, tmax.date)
+                  FULL OUTER JOIN snow
+                  ON snow.id=COALESCE(tmin.id, tmax.id, prcp.id)
+                   AND snow.date=COALESCE(tmin.date, tmax.date,
+                                                    prcp.date)
+                  FULL OUTER JOIN snwd
+                  ON snwd.id=COALESCE(tmin.id, tmax.id, prcp.id, snow.id)
+                   AND snwd.date=COALESCE(tmin.date, tmax.date,
+                   prcp.date, snow.date)""")
 #print("*************\n ************\n **********\n 2002 weather read in done" +str(weather_data.count()) + " time: "+ datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")+"\n************\n ***************\n *************" )
 
 
@@ -99,19 +131,19 @@ weather_data = spark.read.csv("s3a://noaa-ghcn-pds/csv/2002.csv", schema=ghcnd_o
 
 pidgeon_schema = StructType([
     StructField("eventid", StringType(), False),
-    StructField("visible", StringType(),False),
-    StructField("timestamp",TimestampType(),False),
-    StructField("longitude",FloatType(),False),
-    StructField("latitude",FloatType(),False),
-    StructField("gps",IntegerType(),True),
-    StructField("ground_speed",FloatType(),True),
-    StructField("height_above_sealevel",FloatType(),True),
-    StructField("outlier_flag",StringType(),True),
-    StructField("sensor_type",StringType(),True),
-    StructField("taxon_name",StringType(),True),
-    StructField("tag_local_identifier",StringType(),True),
-    StructField("individual_local_identifier",StringType(),True),
-    StructField("study_name",StringType(),True)])
+    StructField("visible", StringType(), False),
+    StructField("timestamp", TimestampType(), False),
+    StructField("longitude", FloatType(), False),
+    StructField("latitude", FloatType(), False),
+    StructField("gps", IntegerType(), True),
+    StructField("ground_speed", FloatType(), True),
+    StructField("height_above_sealevel", FloatType(), True),
+    StructField("outlier_flag", StringType(), True),
+    StructField("sensor_type", StringType(), True),
+    StructField("taxon_name", StringType(), True),
+    StructField("tag_local_identifier", StringType(), True),
+    StructField("individual_local_identifier", StringType(), True),
+    StructField("study_name", StringType(), True)])
 
 #pidgeon_obs = spark.read.csv("../../Data/Pigeonsubset.csv", schema=pidgeon_schema, timestampFormat='yyyy-MM-dd HH:mm:ss.SSS',
 #                             header=True).limit(100)
@@ -160,6 +192,7 @@ def haversine_distance(lat1,lon1,lat2,lon2):
 
 udf_func = udf(lambda a,b,c,d: haversine_distance(a,b,c,d),returnType=FloatType())
 
+
 '''
 station_obs_calc = station_obs_join.withColumn('dist',udf_func(station_obs_join['obs_lat'],station_obs_join['obs_long'],station_obs_join['station_lat'],station_obs_join['station_long']))
 '''
@@ -171,8 +204,8 @@ station_obs_calc = station_obs_join.withColumn('dist',udf_func(station_obs_join[
 
 #station_obs_calc.write.csv("s3a://insightmovementweather/output_data/testjoin.csv")
 
-urlval='jdbc:postgresql://ec2-34-195-21-119.compute-1.amazonaws.com:5432/migrationplus'
-urlval2='jdbc:postgresql://migrationplus2.cbyji2jivihq.us-east-1.rds.amazonaws.com:5432/migrationplus'
+urlval = 'jdbc:postgresql://ec2-34-195-21-119.compute-1.amazonaws.com:5432/migrationplus'
+urlval2 = 'jdbc:postgresql://migrationplus2.cbyji2jivihq.us-east-1.rds.amazonaws.com:5432/migrationplus'
 
 propertiesval = {'user': 'migrationplus', 'password': 'migrationplus', 'batchsize': '50000'}
 #station_output.write.jdbc(url=urlval2, table='sensor_station_distance', mode='append', properties=propertiesval)
@@ -183,8 +216,9 @@ pidgeon_obs.write.jdbc(url=urlval2, table='pidgeon_sensor', mode='overwrite', pr
 
 #print(type(weather_data))
 #print("COUNT", weather_data.count())
-weather_data.write.jdbc(url=urlval2, table='station_obs', mode='overwrite', properties=propertiesval)
+#weather_data.write.jdbc(url=urlval2, table='station_obs', mode='overwrite', properties=propertiesval)
 
+flat_ghcnd2.write.jdbc(url=urlval2, table='station_flatobs', mode='overwrite', properties=propertiesval)
 #print("*************\n ************\n **********\nweather obs write in??" +str(ghcnd_df.count()) + " time: "+ datetime.datetime.now().strftime("%d-%b-%Y (%H:%M:%S.%f)")+"\n************\n ***************\n *************" )
 
 
