@@ -44,7 +44,7 @@ Spark read dataFrame can read either one, but gzip files are non-splittable and 
 be uncompressed on a single node. I will be accessing the files as csv for processing efficiency.
 
 There is a separate text file ghcnd-stations.txt, which lists each station and it's location,
-as well as other identifying information.
+as well as other identifying information. This is a fixed width text file.
 
 ### Movebank
 
@@ -62,16 +62,17 @@ The datafile is downloaded and added to an S3 bucket.
 
 Have an AWS account.
 
-Create an S3 bucket and copy the movebank datassource into it.
+Create an S3 bucket and copy the movebank file into it.
 
 The spark cluster consists for 4 m4.large EC2 instances, 1 master and 3 workers.
 [Pegasus](https://github.com/InsightDataScience/pegasus) is a useful tool to create
 instances by creating a template file in the yaml format.
 
-Download [Postgres JDBC driver 42.2.5](https://jdbc.postgresql.org/download.html) 
+Download the [Postgres JDBC driver 42.2.5](https://jdbc.postgresql.org/download.html) 
 jar to each spark instance in the same directory.
-On the master node, add the jar directory to spark-defaults.conf on the rows for 
+On the master node, add the jar directory path to spark-defaults.conf on the rows for 
 spark.executor.extraClassPath and spark.driver.extraClassPath.
+
 Clone this repository to the master node.
 ```
 git clone https://github.com/MJRichard/Migration-Climate.git
@@ -89,7 +90,7 @@ create the indicies and join the output.
 
 ## Repository Files
 
-```bash
+```
 ├── img                            Image files for the README
 ├── postgreSQL
 │   │── create_tables.sql          SQL commands to create tables for data load
