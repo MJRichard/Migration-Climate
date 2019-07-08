@@ -33,7 +33,20 @@ The study on the [behavioral traits for homing pidgeons](https://www.datareposit
  and the data was collected over a range of years. 
 The datafile is downloaded and added to an S3 bucket.
 
-## Installation
+## Environment Setup
 
-## Repo Structure
+The spark cluster consists for 4 m4.large EC2 instances, 1 master and 3 workers.
+
+Download [Postgres JDBC driver 42.2.5](https://jdbc.postgresql.org/download.html) 
+jar to each spark instance in the same directory.
+On the master node, add the jar directory to spark-defaults.conf on the rows for 
+spark.executor.extraClassPath and spark.driver.extraClassPath.
+
+The PostgreSQL database is version 10.6 an AWS RDS db.m4.xlarge instance with 
+250 GiB of storage attached.
+For an RDS database, the PostGIS extension is already installed, but must be loaded into the database.
+Instructions are [here](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.PostgreSQL.CommonDBATasks.html#Appendix.PostgreSQL.CommonDBATasks.PostGIS)
+and also in the PostgreSQL directory of this repository.
+
+## Repository Files
 
