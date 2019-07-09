@@ -1,10 +1,4 @@
 --database tables
-
-CREATE TABLE sensor_station_distance(
-  id VARCHAR (11) NOT NULL,
-  eventid VARCHAR (20) NOT NULL,
-  distance NUMERIC(20,4)
-  );
   
 CREATE TABLE pidgeon_sensor(
   eventid VARCHAR (20) PRIMARY KEY,
@@ -21,7 +15,7 @@ CREATE TABLE pidgeon_sensor(
   tag_local_identifier VARCHAR(20),
   individual_local_identifier VARCHAR(20),
   study_name VARCHAR(100)
-  sensor_loc GEOGRAPHY(POINT)
+--  sensor_loc GEOGRAPHY(POINT)
 );
 
 CREATE TABLE station_obs(
@@ -34,11 +28,12 @@ CREATE TABLE station_obs(
   s_flag VARCHAR(1),
   obs_time VARCHAR(4)
 );
+--replace with flatobs tables
 
 CREATE TABLE stations(
   id VARCHAR (11) NOT NULL,
   longitude NUMERIC(8,5) NOT NULL,
   latitude NUMERIC(8,5) NOT NULL,
   elevation NUMERIC(8,2)
-  station_loc GEOGRAPHY(POINT)
+--  station_loc GEOGRAPHY(POINT)
 );
